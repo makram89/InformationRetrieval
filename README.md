@@ -6,7 +6,7 @@ Exercises for IR classes
 Documents , nessecery resources and scratch code
 http://www.cs.put.poznan.pl/mtomczyk/ir/lab2/
 
-Official ApachTika:
+Official ApacheTika:
 
 https://tika.apache.org/
 
