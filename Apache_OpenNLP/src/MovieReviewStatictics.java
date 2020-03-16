@@ -117,6 +117,7 @@ public class MovieReviewStatictics
 
     private void processFile(String text)
     {
+// 2.2 Probably because there is some "empty" tokens, and it is more then only these 4 types of words.
         // TODO: process the text to find the following statistics:
         // For each movie derive:
         //    - number of sentences
