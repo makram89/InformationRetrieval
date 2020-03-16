@@ -99,11 +99,12 @@ public class MovieReviewStatictics
         {
             _tokenizerModel  = new  TokenizerModel(new File(TOKENIZER_MODEL));
             _sentenceModel = new SentenceModel(new File(SENTENCE_MODEL));
+            _posModel = new POSModel(new File(POS_MODEL));
 
             _lemmatizer = new DictionaryLemmatizer(new File(LEMMATIZER_DICT));
             _stemmer = new PorterStemmer();
 
-            _posModel = new POSModel(new File(POS_MODEL));
+
             _peopleModel = new TokenNameFinderModel(new File(NAME_MODEL));
             _placesModel = new TokenNameFinderModel(new File(PLACE_MODEL));
             _organizationsModel = new TokenNameFinderModel(new File(ORGANIZATION_MODEL));
@@ -154,14 +155,29 @@ public class MovieReviewStatictics
 
         TokenizerME tokenizerME = new TokenizerME(_tokenizerModel);
         String[] tokens = tokenizerME.tokenize(text);
-//        double[] tokenProbabilities = tokenizerME.getTokenProbabilities();
 
         noTokens = tokens.length;
         _totalTokensCount += noTokens;
 
         POSTaggerME posTaggerME = new POSTaggerME(_posModel);
         String[] tags = posTaggerME.tag(tokens);
-
+        for(var tag : tags)
+        {
+            switch (tag.charAt(0)){
+                case 'V':
+                    _verbCount++;
+                    break;
+                case 'N':
+                    _nounCount++;
+                    break;
+                case 'J':
+                    _adjectiveCount++;
+                    break;
+                case 'R':
+                    _adverbCount++;
+                    break;
+            }
+        }
 
 
         // TODO perform stemming (use derived tokens)
@@ -212,9 +228,12 @@ public class MovieReviewStatictics
         saveResults("Stemmed forms (unique)", noStemmed);
         saveResults("Words from a dictionary (unique)", noWords);
 
-        saveNamedEntities("People", people, new String[] { });
-        saveNamedEntities("Locations", locations, new String[] { });
-        saveNamedEntities("Organizations", organisations, new String[] { });
+//        saveNamedEntities("People", people, new String[] { });
+//        saveNamedEntities("Locations", locations, new String[] { });
+//        saveNamedEntities("Organizations", organisations, new String[] { });
+        saveNamedEntities("People", people, tokens);
+        saveNamedEntities("Locations", locations, tokens);
+        saveNamedEntities("Organizations", organisations, tokens);
     }
 
 
