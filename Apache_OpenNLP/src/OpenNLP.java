@@ -1,13 +1,24 @@
+import opennlp.tools.chunker.ChunkerME;
+import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.langdetect.Language;
 import opennlp.tools.langdetect.LanguageDetectorME;
 import opennlp.tools.langdetect.LanguageDetectorModel;
+import opennlp.tools.lemmatizer.DictionaryLemmatizer;
+import opennlp.tools.namefind.NameFinderME;
+import opennlp.tools.namefind.TokenNameFinder;
+import opennlp.tools.namefind.TokenNameFinderModel;
+import opennlp.tools.postag.POSModel;
+import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
+import opennlp.tools.stemmer.PorterStemmer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class OpenNLP {
 
@@ -15,10 +26,10 @@ public class OpenNLP {
     public static String TOKENIZER_MODEL = "models/en-token.bin";
     public static String SENTENCE_MODEL = "models/en-sent.bin";
     public static String POS_MODEL = "models/en-pos-maxent.bin";
-    public static String CHUNKER_MODEL = "models/en-chunker.bin";
     public static String LEMMATIZER_DICT = "models/en-lemmatizer.dict";
+    public static String CHUNKER_MODEL = "models/en-chunker.bin";
     public static String NAME_MODEL = "models/en-ner-person.bin";
-    public static String ENTITY_XYZ_MODEL = "models/en-ner-xyz.bin";
+    public static String ENTITY_XYZ_MODEL = "models/en-ner-xxx.bin";
 
     public static void main(String[] args) throws IOException {
         OpenNLP openNLP = new OpenNLP();
@@ -30,11 +41,11 @@ public class OpenNLP {
 //		languageDetection();
 //        tokenization();
 //         sentenceDetection();
-         posTagging();
-        // lemmatization();
-        // stemming();
-        // chunking();
-        // nameFinding();
+//         posTagging();
+//         lemmatization();
+//         stemming();
+//         chunking();
+         nameFinding();
     }
 
     private void languageDetection() throws IOException {
@@ -120,46 +131,91 @@ public class OpenNLP {
     }
 
     private void posTagging() throws IOException {
+//        "Like" is in both examples tagged as 'IN', but in first sentence that is incorrect.
 
         File modelFile = new File(POS_MODEL);
-        SentenceModel model = new SentenceModel(modelFile);
-        SentenceDetectorME modelME = new SentenceDetectorME(model);
+        POSModel model = new POSModel(modelFile);
+        POSTaggerME modelME = new POSTaggerME(model);
 
         String[] sentence = new String[0];
         sentence = new String[]{"Cats", "like", "milk"};
-		/*sentence = new String[]{"Cat", "is", "white", "like", "milk"};
-		sentence = new String[] { "Hi", "How", "are", "you", "Welcome", "to", "OpenNLP", "We", "provide", "multiple",
-				"built-in", "methods", "for", "Natural", "Language", "Processing" };
-		sentence = new String[] { "She", "put", "the", "big", "knives", "on", "the", "table" };*/
+		sentence = new String[]{"Cat", "is", "white", "like", "milk"};
+//		sentence = new String[] { "Hi", "How", "are", "you", "Welcome", "to", "OpenNLP", "We", "provide", "multiple",
+//				"built-in", "methods", "for", "Natural", "Language", "Processing" };
+//		sentence = new String[] { "She", "put", "the", "big", "knives", "on", "the", "table" };
+		var output = modelME.tag(sentence);
+        for (var x: output) {
+            System.out.println(x);
+
+        }
     }
 
     private void lemmatization() throws IOException {
+//        With incorrect tag it make output 'O'
+//        Lemmetizer use tag to get context of a word and to identify it properly.
+//        Are ones become 'be' and ones become 'ar'
+
+        File modelFile = new File(LEMMATIZER_DICT);
+        DictionaryLemmatizer dictionaryLemmatizer = new DictionaryLemmatizer(modelFile);
+
         String[] text = new String[0];
         text = new String[]{"Hi", "How", "are", "you", "Welcome", "to", "OpenNLP", "We", "provide", "multiple",
                 "built-in", "methods", "for", "Natural", "Language", "Processing"};
         String[] tags = new String[0];
-        tags = new String[]{"NNP", "WRB", "VBP", "PRP", "VB", "TO", "VB", "PRP", "VB", "JJ", "JJ", "NNS", "IN", "JJ",
+        tags = new String[]{"NN", "WRB", "VBP", "PRP", "VB", "TO", "VP", "PRP", "VB", "JJ", "JJ", "NNS", "IN", "JJ",
                 "NN", "VBG"};
+
+        String[] lemmatize = dictionaryLemmatizer.lemmatize(text, tags);
+        System.out.println(Arrays.asList(lemmatize));
 
     }
 
     private void stemming() {
+        File modelFile = new File(LEMMATIZER_DICT);
+        PorterStemmer model = new PorterStemmer();
+
         String[] sentence = new String[0];
         sentence = new String[]{"Hi", "How", "are", "you", "Welcome", "to", "OpenNLP", "We", "provide", "multiple",
                 "built-in", "methods", "for", "Natural", "Language", "Processing"};
+        ArrayList result = new ArrayList();
+        for (var word:sentence) {
+            result.add(model.stem(word));
+        }
+        System.out.println(result);
 
     }
 
     private void chunking() throws IOException {
+//        I- means "inside the chunk"
+//        B- means "inside the chunk, preceding word is part of different chunk"
+//        I see at least 3 chunks: "She put, | the big knives, | on the table"
+
+        File modelFile = new File(CHUNKER_MODEL);
+        ChunkerModel model = new ChunkerModel(modelFile);
+        ChunkerME chunkerME = new ChunkerME(model);
+
         String[] sentence = new String[0];
         sentence = new String[]{"She", "put", "the", "big", "knives", "on", "the", "table"};
 
         String[] tags = new String[0];
         tags = new String[]{"PRP", "VBD", "DT", "JJ", "NNS", "IN", "DT", "NN"};
 
+        String[] output = chunkerME.chunk(sentence,tags);
+        System.out.println(Arrays.asList(output));
+
     }
 
     private void nameFinding() throws IOException {
+//      with en-ner-person.bin some "names" were incorrect.
+//      Title of film and The were interpreted incorrectly, probably because of capital letters
+
+//      en-ner-xxx is looking for dates
+
+//        File modelFile = new File(NAME_MODEL);
+        File modelFile = new File(ENTITY_XYZ_MODEL);
+        TokenNameFinderModel model = new TokenNameFinderModel(modelFile);
+        NameFinderME nameFinderME = new NameFinderME(model);
+
         String text = "he idea of using computers to search for relevant pieces of information was popularized in the article "
                 + "As We May Think by Vannevar Bush in 1945. It would appear that Bush was inspired by patents "
                 + "for a 'statistical machine' - filed by Emanuel Goldberg in the 1920s and '30s - that searched for documents stored on film. "
@@ -169,6 +225,35 @@ public class OpenNLP {
                 + "was formed by Gerard Salton at Cornell. By the 1970s several different retrieval techniques had been shown to perform "
                 + "well on small text corpora such as the Cranfield collection (several thousand documents). Large-scale retrieval systems, "
                 + "such as the Lockheed Dialog system, came into use early in the 1970s.";
+
+
+        File modelFile2 = new File(TOKENIZER_MODEL);
+        TokenizerModel model2 = new TokenizerModel(modelFile2);
+        TokenizerME modelME = new TokenizerME(model2);
+
+        var tokened = modelME.tokenize(text);
+
+        var output = nameFinderME.find(tokened);
+        System.out.println(Arrays.asList(output));
+//        Dates
+//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,25,26)));
+//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,48,49)));
+//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,74,75)));
+//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,93,94)));
+//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,100,101)));
+//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,109,110)));
+//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,128,129)));
+//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,171,172)));
+
+
+
+//        Names
+//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,22,24)));
+//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,31,32)));
+//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,44,46)));
+//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,60,61)));
+//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,104,106)));
+//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,121,123)));
 
     }
 
