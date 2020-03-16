@@ -6,6 +6,11 @@ Exercises for IR classes
 Documents , nessecery resources and scratch code
 http://www.cs.put.poznan.pl/mtomczyk/ir/lab2/
 
-I recommend to downland ApacheTika jar from official site: 
+Official ApachTika:
 
 https://tika.apache.org/
+
+# Resources to Apache_OpenNLP
+
+Documents , nessecery resources and scratch code
+http://www.cs.put.poznan.pl/mtomczyk/ir/lab3/
