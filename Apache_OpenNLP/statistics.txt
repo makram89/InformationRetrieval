@@ -1,0 +1,15 @@
+Movie: 12 Angry Men
+Sentences: 5
+Tokens: 180
+Stemmed forms (unique): 115
+Words from a dictionary (unique): 81
+People: 
+Locations: 
+Organizations: 
+
+Movie: 12 Years a Slave
+Sentences: 31
+Tokens: 1204
+Stemmed forms (unique): 530
+Words from a dictionary (unique): 362
+People: 

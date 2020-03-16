@@ -43,6 +43,14 @@ public class MovieReviewStatictics
     private TokenNameFinderModel _placesModel;
     private TokenNameFinderModel _organizationsModel;
 
+    public static String TOKENIZER_MODEL = "models/en-token.bin";
+    public static String SENTENCE_MODEL = "models/en-sent.bin";
+    public static String POS_MODEL = "models/en-pos-maxent.bin";
+    public static String LEMMATIZER_DICT = "models/en-lemmatizer.dict";
+    public static String NAME_MODEL = "models/en-ner-person.bin";
+    public static String ORGANIZATION_MODEL = "models/en-ner-organization.bin";
+    public static String PLACE_MODEL = "models/en-ner-location.bin";
+
     public static void main(String[] args)
     {
         MovieReviewStatictics statictics = new MovieReviewStatictics();
@@ -83,15 +91,27 @@ public class MovieReviewStatictics
 
     private void initModelsStemmerLemmatizer()
     {
-        //try
-        //{
-        // TODO: load all OpenNLP models (+Porter stemmer + lemmatizer)
-        // from files (use class variables)
+//        load all OpenNLP models (+Porter stemmer + lemmatizer)
+//        from files (use class variables)
+//        DONE
 
-        //} catch (IOException ex)
-        //{
-        //    Logger.getLogger(MovieReviewStatictics.class.getName()).log(Level.SEVERE, null, ex);
-        //}
+        try
+        {
+            _tokenizerModel  = new  TokenizerModel(new File(TOKENIZER_MODEL));
+            _sentenceModel = new SentenceModel(new File(SENTENCE_MODEL));
+
+            _lemmatizer = new DictionaryLemmatizer(new File(LEMMATIZER_DICT));
+            _stemmer = new PorterStemmer();
+
+            _posModel = new POSModel(new File(POS_MODEL));
+            _peopleModel = new TokenNameFinderModel(new File(NAME_MODEL));
+            _placesModel = new TokenNameFinderModel(new File(PLACE_MODEL));
+            _organizationsModel = new TokenNameFinderModel(new File(ORGANIZATION_MODEL));
+
+        } catch (IOException ex)
+        {
+            Logger.getLogger(MovieReviewStatictics.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private void processFile(String text)
@@ -124,26 +144,63 @@ public class MovieReviewStatictics
 
         // TODO derive sentences (update noSentences variable)
 
+        SentenceDetectorME sentenceDetectorME = new SentenceDetectorME(_sentenceModel);
+        String[] sentences =  sentenceDetectorME.sentDetect(text);
+        noSentences = sentences.length;
+
 
         // TODO derive tokens and POS tags from text
         // (update noTokens and _totalTokensCount)
 
+        TokenizerME tokenizerME = new TokenizerME(_tokenizerModel);
+        String[] tokens = tokenizerME.tokenize(text);
+//        double[] tokenProbabilities = tokenizerME.getTokenProbabilities();
+
+        noTokens = tokens.length;
+        _totalTokensCount += noTokens;
+
+        POSTaggerME posTaggerME = new POSTaggerME(_posModel);
+        String[] tags = posTaggerME.tag(tokens);
+
+
+
         // TODO perform stemming (use derived tokens)
         // (update noStemmed)
-        //Set <String> stems = new HashSet <>();
 
-        //for (String token : tokens)
-        //{
-            // use .toLowerCase().replaceAll("[^a-z0-9]", ""); thereafter, ignore "" tokens
-        //}
-
+        Set <String> stems = new HashSet <>();
+        for (String token : tokens)
+        {
+             var temp = token.toLowerCase().replaceAll("[^a-z0-9]", "");
+             stems.add(_stemmer.stem(temp));
+        }
+        noStemmed = stems.size();
 
         // TODO perform lemmatization (use derived tokens)
         // (remove "O" from results - non-dictionary forms, update noWords)
 
+        String[] lemmatize = _lemmatizer.lemmatize(tokens,tags);
+        Set <String> lems = new HashSet<>();
+        for (String lem : lemmatize)
+        {
+            lems.add(lem.toLowerCase().replaceAll("[^a-z0-9]", ""));
+        }
+        lems.remove("o");
+        noWords = lems.size();
+
 
         // TODO derive people, locations, organisations (use tokens),
         // (update people, locations, organisations lists).
+
+        NameFinderME nameFinderME = new NameFinderME(_peopleModel);
+        people = nameFinderME.find(tokens);
+
+        NameFinderME organizationFinder = new NameFinderME(_organizationsModel);
+        organisations = organizationFinder.find(tokens);
+
+        NameFinderME placeFinder = new NameFinderME(_placesModel);
+        locations = placeFinder.find(tokens);
+
+
 
         // TODO update overall statistics - use tags and check first letters
         // (see https://www.clips.uantwerpen.be/pages/mbsp-tags; first letter = "V" = verb?)

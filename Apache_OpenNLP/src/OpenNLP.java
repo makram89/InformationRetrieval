@@ -14,6 +14,7 @@ import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.stemmer.PorterStemmer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
+import opennlp.tools.util.Span;
 
 import java.io.File;
 import java.io.IOException;
@@ -234,26 +235,12 @@ public class OpenNLP {
         var tokened = modelME.tokenize(text);
 
         var output = nameFinderME.find(tokened);
-        System.out.println(Arrays.asList(output));
-//        Dates
-//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,25,26)));
-//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,48,49)));
-//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,74,75)));
-//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,93,94)));
-//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,100,101)));
-//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,109,110)));
-//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,128,129)));
-//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,171,172)));
+//        System.out.println(Arrays.asList(output));
+        for( Span span: output)
+        {
+            System.out.println(tokened[span.getStart()]);
+        }
 
-
-
-//        Names
-//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,22,24)));
-//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,31,32)));
-//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,44,46)));
-//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,60,61)));
-//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,104,106)));
-//        System.out.println(Arrays.asList(Arrays.copyOfRange(tokened,121,123)));
 
     }
 
